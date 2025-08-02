@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Depends
-from dto import User, UserResponse
+from lib.dto import User, UserResponse
 from databases.database import new_session, UsersDB
 from sqlalchemy import select
 
@@ -17,33 +17,30 @@ async def get_user(User):
         if not user_db:
             raise HTTPException(status_code=404, detail="User not found")
 
-        return {
-            "success": True,
-            "user": User(
-                id=user_db.id,
-                name=user_db.name,
-                age=user_db.age,
-                job=user_db.job
-            )
-        }
+        return UserResponse(
+            success = True,
+            user = user_db
+        )
 
 
 @router.post("/user", response_model=UserResponse)
 async def create_user(user: Annotated[User, Depends()]):
     async with new_session() as session:
-        user_db = UsersDB(
-            id=user.id,
-            name=user.name,
-            age=user.age,
-            job=user.job
-        )
+        if user.id:
+            existing_user = await session.get(UsersDB, user.id)
+            if existing_user:
+                raise HTTPException(status_code=400, detail="User already exists")
+
+
+        user_db = UsersDB(**user.model_dump())
+
         session.add(user_db)
         await session.commit()
 
-        return {
-            "success": True,
-            "user": user
-        }
+        return UserResponse(
+            success = True,
+            user = user_db
+        )
 
 
 
