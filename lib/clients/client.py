@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import List
 from schemas.database import new_session, UsersStageDB, UsersDoneDB
 from sqlalchemy import select
 from processors.processor import user_to_json
@@ -14,17 +15,20 @@ class Client:
         self.session_maker = session_maker
 
 
+    async def get_all_users(self) -> List[UsersStageDB]:
+        async with self.session_maker() as session:
+            result = await session.execute(select(UsersStageDB))
+            return result.scalars().all()
+
     async def export_users_to_json(self, output_file: str = "users_json.json") -> bool:
         try:
-            async with new_session() as session:
-                result = await session.execute(select(UsersStageDB))
-                users = [row[0] for row in result]
+            users = await self.get_all_users()
+            users_data = [user_to_json(user) for user in users]
 
-                users_data = [user_to_json(user) for user in users]
+            with open(output_file, "w") as f:
+                json.dump(users_data, f, indent=4, ensure_ascii=False)
+            return True
 
-                with open(output_file, "w") as f:
-                    json.dump(users_data, f, indent=4, ensure_ascii=False)
-                return True
         except Exception as e:
             logger.error(f"Error exporting users info: {e}")
             return False
