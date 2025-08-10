@@ -1,12 +1,10 @@
-from typing import Optional
-
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from typing import Optional, Literal
+from sqlalchemy import String
+from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from config import engine
 
 
-engine = create_async_engine(
-    "sqlite+aiosqlite:///users.db"
-)
 
 new_session = async_sessionmaker(
     engine,
@@ -19,13 +17,20 @@ class Model(DeclarativeBase):
     pass
 
 class UsersDB(Model):
-    __tablename__= 'users'
+    __abstract__= True
 
-    id: Mapped[int] = mapped_column(primary_key= True)
+    id: Mapped[int] = mapped_column(primary_key= True, autoincrement=True)
     name: Mapped[str]
     age: Mapped[int]
     sex: Mapped[Optional[str]]
     job: Mapped[Optional[str]]
+
+class UsersStageDB(UsersDB):
+    __tablename__ = 'users_stage'
+
+class UsersDoneDB(UsersDB):
+    __tablename__ = 'users_done'
+    age_class: Mapped[Literal["child", "adolescent", "adult"]] = mapped_column(String(10))
 
 async def create_tables():
 

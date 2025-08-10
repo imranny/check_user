@@ -1,0 +1,26 @@
+[
+    {
+        "id": 1,
+        "name": "frfr",
+        "age": 27,
+        "sex": "eded",
+        "job": "egerg",
+        "age_class": "adolescent"
+    },
+    {
+        "id": 2,
+        "name": "imran",
+        "age": 21,
+        "sex": "male",
+        "job": "dev",
+        "age_class": "adolescent"
+    },
+    {
+        "id": 3,
+        "name": "imran",
+        "age": 23,
+        "sex": "male",
+        "job": "dev",
+        "age_class": "adolescent"
+    }
+]
